@@ -1,0 +1,3 @@
+main.cpp - has the testcases which covers most of the cases
+interval.cpp - defines the interval class and its member function and some of the utility functions
+
