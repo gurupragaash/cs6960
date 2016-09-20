@@ -148,23 +148,38 @@ interval interval::subtract(interval first, interval second) {
 interval interval::bitwise_and(interval first, interval second) {
   int lowest = LOW, highest = HIGH;
   
+  //We can safely say, high <= max(first.hi, second.hi) because 
+  //this is an and operatiom, so all the value can never increase.
+  //At best it can stay at the max
+  highest = (first.hi > second.hi) ? first.hi : second.hi;
+
+
   // If either one of the interval's low has a positive value, then we can say
   // result will always be positive
   if ((first.lo >= 0) || (second.lo >= 0)) {
     lowest = 0;
   }
 
-  // If both the intervals of positive, then the highest of the new interval
-  // will be the smallest of both.
+  // If both the intervals are positive, then the highest of the new interval
+  // will be the smallest of both, lowest will be 0.
+  // Highest will be the smallest of the both, the numbers aftert the 
+  // smallest high will be brought down to value <= smallest due to and 
   if ((first.lo >= 0) && (second.lo >= 0)) {
+    lowest = 0;
     highest = (first.hi > second.hi) ? second.hi : first.hi; 
   }
 
+  //if an interval is just -16, then high has to be 0. Low can be -16 
+  if (((first.lo == -16) && (first.hi == -16)) ||
+      ((second.lo == -16) && (second.hi == -16))) {
+    highest = 0;
+  }
+
   //If both of the highest is negative, then the result will be all
-  //negatives with the lowest of the result smallest of both of them
+  //negatives with the highest of the result smallest of both of them
   if ((first.hi < 0) && (second.hi < 0)) {
-    highest = -1;
-    lowest = (first.lo > second.lo) ? second.lo : first.lo;
+    lowest = LOW;
+    highest = (first.hi > second.hi) ? second.hi : first.hi;
   }
 
   //if an interval is just 0's, then the result is 0
@@ -174,6 +189,11 @@ interval interval::bitwise_and(interval first, interval second) {
     highest = 0;
   }
 
+  //if interval is just one digit, then and both of them and output
+  if ((first.lo == first.hi) && (second.lo == second.hi)) {
+    lowest = first.lo & second.lo;
+    highest = lowest;
+  }
   return interval(lowest, highest);
 }
 

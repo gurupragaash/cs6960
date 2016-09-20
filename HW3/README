@@ -1,3 +1,4 @@
 main.cpp - has the testcases which covers most of the cases
 interval.cpp - defines the interval class and its member function and some of the utility functions
+test.cpp - exhautive vs regular tester - There are lots of differences in the bitwise and. But its too difficult to add the logic to find the precise output, so returning top
 
