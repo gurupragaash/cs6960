@@ -16,7 +16,7 @@ interval abstract(int *values, int count) {
   int i, low = interval::MAX, high = interval::MIN;
   if (count == 0) {
     cout << "Count is 0";
-    //assert(false);
+    assert(false);
   }
   for (i = 0; i < count; i++) {
     low = (low > values[i]) ? values[i] : low;
@@ -126,7 +126,7 @@ void exhaustive_sub() {
             continue;
           }
           cout << "Subtraction" <<  a << "!=" << b;
-          //assert(false);
+          assert(false);
         }
       }
     } 
@@ -134,25 +134,65 @@ void exhaustive_sub() {
   cout << "Subtraction Success" << endl;
 }
 
+void knownBitsExhaustive (interval data, int *ones, int *zeros) {
+  int count;
+  *ones = data.lo;
+  *zeros = data.hi;
+  for (count = data.lo; count <= data.hi; count++) {
+    *ones &= count;
+    *zeros |= count;
+  }
+}
+void exhaustive_knownBits() {
+  int lo1, hi1;
+  int ones, zeros, ones1, zeros1;
+  for( lo1 = interval::MIN; lo1 <= interval::MAX; lo1++) {
+    for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
+      knownBits(interval(lo1, hi1), &ones1, &zeros1);
+      knownBitsExhaustive(interval(lo1, hi1), &ones, &zeros);
+      if ( ones != ones1) {
+        cout << "Interval is " << interval(lo1, hi1) << endl;
+        cout << "ones = " << ones1 << " Exhaustive is " << ones << endl;
+      }
+      if (zeros != zeros1) {
+        cout << "Interval is " << interval(lo1, hi1) << endl;
+        cout << "zeros = " << zeros1 << "exhaustive is " << zeros << endl;
+      }
+    }
+  }
+  cout <<"exhaustive known done" << endl;
+}
 void exhaustive_and() {
   int regular_bits = 0, exhaustive_bits = 0, old_bits = 0;
   int lo1, lo2, hi1, hi2;
+  int knownZerosThis, knownZerosOther;
+  int knownOnesThis, knownOnesOther;
+  int resultKnownOnes, resultKnownZeros;
   for( lo1 = interval::MIN; lo1 <= interval::MAX; lo1++) {
     for (lo2 = interval::MIN; lo2 <= interval::MAX; lo2++) {
       for (hi2 = lo2; hi2 <= interval::MAX; hi2++) {
         for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
           interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
           interval b = interval(lo1, hi1) & interval(lo2, hi2);
-          interval c = bitwise_and(interval(lo1, hi1), interval(lo2, hi2));
+          //interval c = bitwise_and(interval(lo1, hi1), interval(lo2, hi2));
           //Uncomment to see the optimized output 
           exhaustive_bits += a.bits();
           regular_bits += b.bits();
-          old_bits += c.bits();
-          if (a == b) {
-            continue;
+          //old_bits += c.bits();
+          //if (a == b) {
+          //  continue;
+          //}
+          if ((a.bits() + 3) < b.bits()) {
+            cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
+            cout << "Regular and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << b << endl;
+            knownBits(interval(lo1, hi1), &knownOnesThis, &knownZerosThis);
+            knownBits(interval(lo2, hi2), &knownOnesOther, &knownZerosOther);
+            resultKnownOnes = knownOnesThis & knownOnesOther; 
+            resultKnownZeros = knownZerosThis | knownZerosOther;
+          cout << "First Known ones and zeros are " << knownOnesThis << knownZerosThis << endl; 
+          cout << "Other Known ones and zeros are " << knownOnesOther << knownZerosOther << endl;
+          cout << "Result OR Known ones and zeros are " << resultKnownOnes << resultKnownZeros << endl; 
           }
-          //cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
-          //cout << "Regular and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << b << endl;
           //cout << "First Known ones and zeros are " << (knownOnes(interval(lo1, hi1))) << " , " << (knownZeros(interval(lo1, hi1))) << endl;
           //cout << "Other Known ones and zeros are " << (knownOnes(interval(lo2, hi2))) << " , " << (knownZeros(interval(lo2, hi2))) << endl;
           //cout << "Result OR Known ones and zeros are " << (knownOnes(interval(lo1, hi1)) & knownOnes(interval(lo2, hi2))) << " , " << (knownZeros(interval(lo1, hi1)) | knownZeros(interval(lo2, hi2))) << endl;
@@ -160,18 +200,20 @@ void exhaustive_and() {
           if (a <= b) {
             continue;
           }
-          //assert(false);
+          assert(false);
         }
       }
     } 
   }
   cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
-  cout << "And Success Regular bit " << old_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)old_bits/(double)exhaustive_bits << endl;
+  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << endl; 
+  //cout << "And Success Regular bit " << old_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)old_bits/(double)exhaustive_bits << endl;
 }
 
 int main() {
   //exhaustive_sub();
   exhaustive_and();
+  //exhaustive_knownBits();
 /*
   cout <<"case 1: bitwise and of all positive integers" << endl;
   cout << exhaustive_oper(interval(1, 15), interval(0,3),2)<< endl;

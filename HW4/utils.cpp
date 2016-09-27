@@ -17,24 +17,24 @@ inline bool get_valid_value(int *a) {
 //The ones present in the return values, 
 //are present in all the values in the interval
 //The zeros present in ther result can be ones or zeros
-int knownOnes(interval data) {
-  int ones = -1;
-  for (int i = data.lo; i<= data.hi; i++) {
-    ones &= i;
-  }
-  return ones;
-}
-
+//
 //The zeros present in the return value,
 //are present in all the values of the interval
 //Thus this zeros will be propagated to the result also
 //The ones present in ther result can be ones or zeros
-int knownZeros(interval data) {
-  int zeros = 0;
-  for (int i = data.lo; i<= data.hi; i++) {
-    zeros |= i;
+void knownBits(interval data, int *ones, int *zeros) {
+  if (data.hi == data.lo) {
+    *ones = data.hi;
+    *zeros = data.hi;
+  } else {
+    int bits = (int)log2(data.hi - data.lo) + 1;
+    //Find the difference between hi and lo. Let it be x
+    //Now this X numbers will differ in the LSB with
+    //max of log2(X)+1 bits. So set those bits to 0
+    //and then & with the data.hi & data.lo
+    *ones = (data.hi & data.lo) & (-1 << bits);
+
+    //Same logic as above but now | them
+    *zeros = (data.hi | data.lo) | ((1 << bits) -1);
   }
-  return zeros;
 }
-
-

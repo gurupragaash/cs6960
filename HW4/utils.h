@@ -5,7 +5,6 @@
 
 const int SIGN_MASK = 0x1F;
 inline bool get_valid_value(int *a);
-int knownOnes(interval data);
-int knownZeros(interval data); 
+void knownBits(interval data, int *ones, int *zeros);
 
 #endif
