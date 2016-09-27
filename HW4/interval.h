@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cassert>
 
+using namespace std;
+
 /*
  * 6-bit signed intervals. it is required that hi >= lo. the bounds
  * are inclusive.
@@ -14,6 +16,9 @@ struct interval {
   const int lo, hi;
 
   interval(int _lo, int _hi) : lo(_lo), hi(_hi) {
+    if (lo > hi) {
+      cout << lo << hi << "\n";
+    }
     assert(lo >= MIN && lo <= MAX);
     assert(hi >= MIN && hi <= MAX);
     assert(lo <= hi);

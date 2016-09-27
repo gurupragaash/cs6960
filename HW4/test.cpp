@@ -132,13 +132,13 @@ void exhaustive_and() {
     for (lo2 = interval::MIN; lo2 <= interval::MAX; lo2++) {
       for (hi2 = lo2; hi2 <= interval::MAX; hi2++) {
         for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
-          //interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
           interval b = interval(lo1, hi1) & interval(lo2, hi2);
           regular_bits += b.bits();
-          //exhaustive_bits += a.bits();
+
+          interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
+          exhaustive_bits += a.bits();
           //Uncomment to see the debug output 
-          /*
-          if (a <= b) {
+          if (a.bits() + 2 >= b.bits()) {
             continue;
           }
           cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
@@ -146,13 +146,13 @@ void exhaustive_and() {
           if (a <= b) {
             continue;
           }
-          assert(false);*/
+          assert(false);
         }
       }
     } 
   }
-  //cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
-  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << endl; 
+  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
+  //cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << endl; 
 }
 
 int main() {
