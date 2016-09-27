@@ -1,6 +1,8 @@
 #include <assert.h>
 #include<iostream>
-#include"interval.cpp"
+#include"utils.cpp"
+#include"interval_sub.cpp"
+#include"interval_and.cpp"
 using namespace std;
 
 interval abstract(int *values, int count);
@@ -14,7 +16,7 @@ interval abstract(int *values, int count) {
   int i, low = interval::MAX, high = interval::MIN;
   if (count == 0) {
     cout << "Count is 0";
-    assert(false);
+    //assert(false);
   }
   for (i = 0; i < count; i++) {
     low = (low > values[i]) ? values[i] : low;
@@ -23,6 +25,58 @@ interval abstract(int *values, int count) {
 
   return interval(low, high);
 }
+
+interval bitwise_and(interval first, interval second) {
+  int lowest = interval::MIN, highest = interval::MAX;
+  
+  //We can safely say, high <= max(first.hi, second.hi) because 
+  //this is an and operatiom, so all the value can never increase.
+  //At best it can stay at the max
+  highest = (first.hi > second.hi) ? first.hi : second.hi;
+
+
+  // If either one of the interval's low has a positive value, then we can say
+  // result will always be positive
+  if ((first.lo >= 0) || (second.lo >= 0)) {
+    lowest = 0;
+  }
+
+  // If both the intervals are positive, then the highest of the new interval
+  // will be the smallest of both, lowest will be 0.
+  // Highest will be the smallest of the both, the numbers aftert the 
+  // smallest high will be brought down to value <= smallest due to and 
+  if ((first.lo >= 0) && (second.lo >= 0)) {
+    lowest = 0;
+    highest = (first.hi > second.hi) ? second.hi : first.hi; 
+  }
+
+  //if an interval is just -16, then high has to be 0. Low can be -16 
+  if (((first.lo == -16) && (first.hi == -16)) ||
+      ((second.lo == -16) && (second.hi == -16))) {
+    highest = 0;
+  }
+
+  //If both of the highest is negative, then the result will be all
+  //negatives with the highest of the result smallest of both of them
+  if ((first.hi < 0) && (second.hi < 0)) {
+    highest = (first.hi > second.hi) ? second.hi : first.hi;
+  }
+
+  //if an interval is just 0's, then the result is 0
+  if (((first.lo == 0) && (first.hi == 0)) ||
+      ((second.lo == 0) && (second.hi == 0))) {
+    lowest = 0;
+    highest = 0;
+  }
+
+  //if interval is just one digit, then and both of them and output
+  if ((first.lo == first.hi) && (second.lo == second.hi)) {
+    lowest = first.lo & second.lo;
+    highest = lowest;
+  }
+  return interval(lowest, highest);
+}
+
 
 void concreate(interval a, int *values, int *count) {
   int i;
@@ -72,7 +126,7 @@ void exhaustive_sub() {
             continue;
           }
           cout << "Subtraction" <<  a << "!=" << b;
-          assert(false);
+          //assert(false);
         }
       }
     } 
@@ -81,7 +135,7 @@ void exhaustive_sub() {
 }
 
 void exhaustive_and() {
-  int regular_bits = 0, exhaustive_bits = 0;
+  int regular_bits = 0, exhaustive_bits = 0, old_bits = 0;
   int lo1, lo2, hi1, hi2;
   for( lo1 = interval::MIN; lo1 <= interval::MAX; lo1++) {
     for (lo2 = interval::MIN; lo2 <= interval::MAX; lo2++) {
@@ -89,9 +143,11 @@ void exhaustive_and() {
         for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
           interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
           interval b = interval(lo1, hi1) & interval(lo2, hi2);
+          interval c = bitwise_and(interval(lo1, hi1), interval(lo2, hi2));
           //Uncomment to see the optimized output 
           exhaustive_bits += a.bits();
           regular_bits += b.bits();
+          old_bits += c.bits();
           if (a == b) {
             continue;
           }
@@ -104,12 +160,13 @@ void exhaustive_and() {
           if (a <= b) {
             continue;
           }
-          assert(false);
+          //assert(false);
         }
       }
     } 
   }
   cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
+  cout << "And Success Regular bit " << old_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)old_bits/(double)exhaustive_bits << endl;
 }
 
 int main() {
