@@ -2,6 +2,11 @@
 
 const int SIGN_MASK = 0x1F;
 
+#define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
+static const char LogTable64[64] = 
+{ -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+  LT(4), LT(5), LT(5)};
+
 //The ones present in the return values, 
 //are present in all the values in the interval
 //The zeros present in ther result can be ones or zeros
@@ -15,7 +20,9 @@ inline void knownBits(interval data, int *ones, int *zeros) {
     *ones = data.hi;
     *zeros = data.hi;
   } else {
-    int bits = (int)log2(data.hi - data.lo) + 1;
+    //int bits = (int)log2(data.hi - data.lo) + 1;
+    int bits = (int)LogTable64[data.hi - data.lo] + 1;
+
     //Find the difference between hi and lo. Let it be x
     //Now this X numbers will differ in the LSB with
     //max of log2(X)+1 bits. So set those bits to 0

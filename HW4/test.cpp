@@ -9,7 +9,6 @@ interval exhaustive_oper(interval a, interval b, int oper);
 void exhaustive_sub();
 void exhaustive_and();
 
-
 bool get_valid_value(int *a) {
   int b = *a;
   if (*a > interval::MAX) {
@@ -20,23 +19,6 @@ bool get_valid_value(int *a) {
     return true;
   }
   return false;
-}
-
-void knownBits(interval data, int *ones, int *zeros) {
-  if (data.hi == data.lo) {
-    *ones = data.hi;
-    *zeros = data.hi;
-  } else {
-    int bits = (int)log2(data.hi - data.lo) + 1;
-    //Find the difference between hi and lo. Let it be x
-    //Now this X numbers will differ in the LSB with
-    //max of log2(X)+1 bits. So set those bits to 0
-    //and then & with the data.hi & data.lo
-    *ones = (data.hi & data.lo) & (-1 << bits);
-
-    //Same logic as above but now | them
-    *zeros = (data.hi | data.lo) | ((1 << bits) -1);
-  }
 }
 
 interval abstract(int *values, int count) {
@@ -119,6 +101,7 @@ void knownBitsExhaustive (interval data, int *ones, int *zeros) {
   }
 }
 
+/*
 void exhaustive_knownBits() {
   int lo1, hi1;
   int ones, zeros, ones1, zeros1;
@@ -137,7 +120,8 @@ void exhaustive_knownBits() {
     }
   }
   cout <<"exhaustive known done" << endl;
-}
+}*/
+
 void exhaustive_and() {
   int regular_bits = 0, exhaustive_bits = 0, old_bits = 0;
   int lo1, lo2, hi1, hi2;
@@ -148,36 +132,31 @@ void exhaustive_and() {
     for (lo2 = interval::MIN; lo2 <= interval::MAX; lo2++) {
       for (hi2 = lo2; hi2 <= interval::MAX; hi2++) {
         for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
-          interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
+          //interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
           interval b = interval(lo1, hi1) & interval(lo2, hi2);
+          regular_bits += b.bits();
+          //exhaustive_bits += a.bits();
           //Uncomment to see the debug output 
+          /*
           if (a <= b) {
             continue;
           }
           cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
           cout << "Regular and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << b << endl;
-          if ((a.bits() + 3) < b.bits()) {
-            knownBits(interval(lo1, hi1), &knownOnesThis, &knownZerosThis);
-            knownBits(interval(lo2, hi2), &knownOnesOther, &knownZerosOther);
-            resultKnownOnes = knownOnesThis & knownOnesOther; 
-            resultKnownZeros = knownZerosThis | knownZerosOther;
-            cout << "First Known ones and zeros are " << knownOnesThis << knownZerosThis << endl; 
-            cout << "Other Known ones and zeros are " << knownOnesOther << knownZerosOther << endl;
-            cout << "Result OR Known ones and zeros are " << resultKnownOnes << resultKnownZeros << endl; 
-          }
           if (a <= b) {
             continue;
           }
-          assert(false);
+          assert(false);*/
         }
       }
     } 
   }
-  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
+  //cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
+  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << endl; 
 }
 
 int main() {
-  exhaustive_sub();
+  //exhaustive_sub();
   exhaustive_and();
   return 1;
 }
