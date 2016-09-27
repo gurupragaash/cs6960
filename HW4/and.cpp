@@ -16,22 +16,17 @@ static const char LogTable64[64] =
 //Thus this zeros will be propagated to the result also
 //The ones present in ther result can be ones or zeros
 inline void knownBits(interval data, int *ones, int *zeros) {
-  if (data.hi == data.lo) {
-    *ones = data.hi;
-    *zeros = data.hi;
-  } else {
-    //int bits = (int)log2(data.hi - data.lo) + 1;
-    int bits = (int)LogTable64[data.hi - data.lo] + 1;
+  //int bits = (int)log2(data.hi - data.lo) + 1;
+  int bits = (int)LogTable64[data.hi - data.lo] + 1;
 
-    //Find the difference between hi and lo. Let it be x
-    //Now this X numbers will differ in the LSB with
-    //max of log2(X)+1 bits. So set those bits to 0
-    //and then & with the data.hi & data.lo
-    *ones = (data.hi & data.lo) & (-1 << bits);
+  //Find the difference between hi and lo. Let it be x
+  //Now this X numbers will differ in the LSB with
+  //max of log2(X)+1 bits. So set those bits to 0
+  //and then & with the data.hi & data.lo
+  *ones = (data.hi & data.lo) & (-1 << bits);
 
-    //Same logic as above but now | them
-    *zeros = (data.hi | data.lo) | ((1 << bits) -1);
-  }
+  //Same logic as above but now | them
+  *zeros = (data.hi | data.lo) | ((1 << bits) -1);
 }
 
 interval interval::operator&(const interval &other) {
