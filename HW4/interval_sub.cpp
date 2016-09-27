@@ -1,4 +1,18 @@
-#include"utils.h"
+#include"interval.h"
+
+// function which checks if the value is in range, else rotates the value.
+// If there was a rotation returns true, else false
+inline bool get_valid_value(int *a) {
+  int b = *a;
+  if (*a > interval::MAX) {
+    *a = interval::MIN + (*a % (interval::MAX + 1));
+    return true;
+  } else if (*a < interval::MIN) {
+    *a = interval::MAX + (*a % (interval::MIN - 1));
+    return true;
+  }
+  return false;
+}
 
 interval interval::operator-(const interval &other) {
   int lowest, highest;

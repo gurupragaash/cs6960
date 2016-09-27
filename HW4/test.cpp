@@ -1,8 +1,5 @@
 #include <assert.h>
-#include<iostream>
-#include"utils.cpp"
-#include"interval_sub.cpp"
-#include"interval_and.cpp"
+#include"interval.h"
 using namespace std;
 
 interval abstract(int *values, int count);
@@ -11,6 +8,36 @@ int sub(int a, int b);
 interval exhaustive_oper(interval a, interval b, int oper);
 void exhaustive_sub();
 void exhaustive_and();
+
+
+bool get_valid_value(int *a) {
+  int b = *a;
+  if (*a > interval::MAX) {
+    *a = interval::MIN + (*a % (interval::MAX + 1));
+    return true;
+  } else if (*a < interval::MIN) {
+    *a = interval::MAX + (*a % (interval::MIN - 1));
+    return true;
+  }
+  return false;
+}
+
+void knownBits(interval data, int *ones, int *zeros) {
+  if (data.hi == data.lo) {
+    *ones = data.hi;
+    *zeros = data.hi;
+  } else {
+    int bits = (int)log2(data.hi - data.lo) + 1;
+    //Find the difference between hi and lo. Let it be x
+    //Now this X numbers will differ in the LSB with
+    //max of log2(X)+1 bits. So set those bits to 0
+    //and then & with the data.hi & data.lo
+    *ones = (data.hi & data.lo) & (-1 << bits);
+
+    //Same logic as above but now | them
+    *zeros = (data.hi | data.lo) | ((1 << bits) -1);
+  }
+}
 
 interval abstract(int *values, int count) {
   int i, low = interval::MAX, high = interval::MIN;
@@ -25,58 +52,6 @@ interval abstract(int *values, int count) {
 
   return interval(low, high);
 }
-
-interval bitwise_and(interval first, interval second) {
-  int lowest = interval::MIN, highest = interval::MAX;
-  
-  //We can safely say, high <= max(first.hi, second.hi) because 
-  //this is an and operatiom, so all the value can never increase.
-  //At best it can stay at the max
-  highest = (first.hi > second.hi) ? first.hi : second.hi;
-
-
-  // If either one of the interval's low has a positive value, then we can say
-  // result will always be positive
-  if ((first.lo >= 0) || (second.lo >= 0)) {
-    lowest = 0;
-  }
-
-  // If both the intervals are positive, then the highest of the new interval
-  // will be the smallest of both, lowest will be 0.
-  // Highest will be the smallest of the both, the numbers aftert the 
-  // smallest high will be brought down to value <= smallest due to and 
-  if ((first.lo >= 0) && (second.lo >= 0)) {
-    lowest = 0;
-    highest = (first.hi > second.hi) ? second.hi : first.hi; 
-  }
-
-  //if an interval is just -16, then high has to be 0. Low can be -16 
-  if (((first.lo == -16) && (first.hi == -16)) ||
-      ((second.lo == -16) && (second.hi == -16))) {
-    highest = 0;
-  }
-
-  //If both of the highest is negative, then the result will be all
-  //negatives with the highest of the result smallest of both of them
-  if ((first.hi < 0) && (second.hi < 0)) {
-    highest = (first.hi > second.hi) ? second.hi : first.hi;
-  }
-
-  //if an interval is just 0's, then the result is 0
-  if (((first.lo == 0) && (first.hi == 0)) ||
-      ((second.lo == 0) && (second.hi == 0))) {
-    lowest = 0;
-    highest = 0;
-  }
-
-  //if interval is just one digit, then and both of them and output
-  if ((first.lo == first.hi) && (second.lo == second.hi)) {
-    lowest = first.lo & second.lo;
-    highest = lowest;
-  }
-  return interval(lowest, highest);
-}
-
 
 void concreate(interval a, int *values, int *count) {
   int i;
@@ -143,6 +118,7 @@ void knownBitsExhaustive (interval data, int *ones, int *zeros) {
     *zeros |= count;
   }
 }
+
 void exhaustive_knownBits() {
   int lo1, hi1;
   int ones, zeros, ones1, zeros1;
@@ -174,29 +150,21 @@ void exhaustive_and() {
         for (hi1 = lo1; hi1 <= interval::MAX; hi1++) {
           interval a = exhaustive_oper(interval(lo1, hi1), interval(lo2, hi2), 2);
           interval b = interval(lo1, hi1) & interval(lo2, hi2);
-          //interval c = bitwise_and(interval(lo1, hi1), interval(lo2, hi2));
-          //Uncomment to see the optimized output 
-          exhaustive_bits += a.bits();
-          regular_bits += b.bits();
-          //old_bits += c.bits();
-          //if (a == b) {
-          //  continue;
-          //}
+          //Uncomment to see the debug output 
+          if (a <= b) {
+            continue;
+          }
+          cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
+          cout << "Regular and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << b << endl;
           if ((a.bits() + 3) < b.bits()) {
-            cout << "Exhaustive and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << a << endl;
-            cout << "Regular and of " << interval(lo1, hi1) << " and " << interval(lo2, hi2) << " resulted to " << b << endl;
             knownBits(interval(lo1, hi1), &knownOnesThis, &knownZerosThis);
             knownBits(interval(lo2, hi2), &knownOnesOther, &knownZerosOther);
             resultKnownOnes = knownOnesThis & knownOnesOther; 
             resultKnownZeros = knownZerosThis | knownZerosOther;
-          cout << "First Known ones and zeros are " << knownOnesThis << knownZerosThis << endl; 
-          cout << "Other Known ones and zeros are " << knownOnesOther << knownZerosOther << endl;
-          cout << "Result OR Known ones and zeros are " << resultKnownOnes << resultKnownZeros << endl; 
+            cout << "First Known ones and zeros are " << knownOnesThis << knownZerosThis << endl; 
+            cout << "Other Known ones and zeros are " << knownOnesOther << knownZerosOther << endl;
+            cout << "Result OR Known ones and zeros are " << resultKnownOnes << resultKnownZeros << endl; 
           }
-          //cout << "First Known ones and zeros are " << (knownOnes(interval(lo1, hi1))) << " , " << (knownZeros(interval(lo1, hi1))) << endl;
-          //cout << "Other Known ones and zeros are " << (knownOnes(interval(lo2, hi2))) << " , " << (knownZeros(interval(lo2, hi2))) << endl;
-          //cout << "Result OR Known ones and zeros are " << (knownOnes(interval(lo1, hi1)) & knownOnes(interval(lo2, hi2))) << " , " << (knownZeros(interval(lo1, hi1)) | knownZeros(interval(lo2, hi2))) << endl;
-          //cout << "Result AND Known ones and zeros are " << (knownOnes(interval(lo1, hi1)) & knownOnes(interval(lo2, hi2))) << " , " << (knownZeros(interval(lo1, hi1)) & knownZeros(interval(lo2, hi2))) << endl;
           if (a <= b) {
             continue;
           }
@@ -206,25 +174,10 @@ void exhaustive_and() {
     } 
   }
   cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)regular_bits/(double)exhaustive_bits << endl;
-  cout << "And Success Regular bit " << regular_bits << " Exhaustive bit " << exhaustive_bits << endl; 
-  //cout << "And Success Regular bit " << old_bits << " Exhaustive bit " << exhaustive_bits << "Ratio  " << (double)old_bits/(double)exhaustive_bits << endl;
 }
 
 int main() {
-  //exhaustive_sub();
+  exhaustive_sub();
   exhaustive_and();
-  //exhaustive_knownBits();
-/*
-  cout <<"case 1: bitwise and of all positive integers" << endl;
-  cout << exhaustive_oper(interval(1, 15), interval(0,3),2)<< endl;
-  cout <<"case 2: bitwise and of all negative integers" << endl;
-  cout << exhaustive_oper(interval(-8, -6), interval(-12, -3),2)<< endl;
-  cout <<"case 3: bitwise and of negative interval and positive interval" << endl;
-  cout << exhaustive_oper(interval(-16, 0), interval(0, 15),2)<< endl;
-  cout <<"case 4: bitwise and of mix of intervals" << endl;
-  cout << exhaustive_oper(interval(-10, 10), interval (-16, 3),2)<< endl;
-  cout <<"case 5: bitwise and full intervals" << endl;
-  cout << exhaustive_oper(interval(-16, 15), interval(-16, 15),2)<< endl;
- */
   return 1;
 }
