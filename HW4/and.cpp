@@ -75,10 +75,10 @@ inline interval andOper(const interval &first, const interval &other) {
     //Sometimes 'OR' with the knownZeros bloats the high with values outside the
     //range of the given interval. So just check that with the below case.
     //If its bloated then replace the result with (min hi & resultKnownZeros) 
-    highest = ((other.hi | (knownZerosOther & SIGN_MASK)) & knownZerosThis);
+    highest = ((other.hi | (knownZerosOther )) & knownZerosThis);
     highest = (highest > other.hi) ? (other.hi & resultKnownZeros) : highest;
   } else {
-    highest = ((first.hi | (knownZerosThis & SIGN_MASK)) & knownZerosOther);
+    highest = ((first.hi | (knownZerosThis )) & knownZerosOther);
     highest = (highest > first.hi) ? (first.hi & resultKnownZeros) : highest;
   }
 

@@ -1,0 +1,7 @@
+829,832c829
+<   //If both the intervals are constant, just and them
+<   if (isSingleElement() && Other.isSingleElement()) {
+<     return ConstantRange(getLower() & Other.getLower());
+<   }
+---
+>   // TODO: replace this with something less conservative

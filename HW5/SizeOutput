@@ -1,0 +1,14 @@
+Built using clang3.8
+================================================================================================================================
+Original - svn 1.9.3 - clang4 - (1)
+   text	   data	    bss	    dec	    hex	filename
+57793210	2149384	 157832	60100426	3950f4a	/home/guru/Fall-2016/AdvancedCompilers/git/HW5/LlvmCode/Original/install/bin/clang++
+Modified - svn 1.9.3 - clang4 - (2)
+   text	   data	    bss	    dec	    hex	filename
+57793742	2149408	 157832	60100982	3951176	/home/guru/Fall-2016/AdvancedCompilers/git/HW5/LlvmCode/Modified/build/bin/clang++
+================================================================================================================================
+
+
+Original - svn 1.9.3 - Built using clang4 from (1)
+   text	   data	    bss	    dec	    hex	filename
+53935131	2151224	 157816	56244171	35a37cb	/home/guru/Fall-2016/AdvancedCompilers/git/HW5/LlvmCode/Original/build/bin/clang++
